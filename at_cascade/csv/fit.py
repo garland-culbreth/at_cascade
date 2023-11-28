@@ -10,7 +10,7 @@ import os
 import time
 '''
 
-{xrst_begin csv_fit}
+{xrst_begin csv.fit}
 {xrst_spell
    avg
    avgint
@@ -56,7 +56,7 @@ Prototype
 
 Example
 *******
-:ref:`csv_break_fit_pred-name` .
+:ref:`csv.break_fit_pred-name` .
 
 fit_dir
 *******
@@ -67,10 +67,22 @@ max_node_depth
 **************
 This is the number of generations below root node that are included;
 see :ref:`job_descendent@Node Depth Versus Job Depth`
-and note that sex is the :ref:`all_option_table@split_covariate_name` .
+and note that sex is the :ref:`option_all_table@split_covariate_name` .
 If max_node_depth is zero,  only the root node will be included.
 If max_node_depth is None,  the root node and all its descendants are included.
 
+split_reference_table
+*********************
+The :ref:`option_all_table@split_covariate_name` is ``sex`` and
+the :ref:`split_reference_table-name` has the following values for
+csv.fit, :ref:`csv.simulate-name` and :ref:`csv.predict-name` :
+{xrst_code py}'''
+split_reference_table = [
+   { 'split_reference_name' : 'female' , 'split_reference_value' : -0.5 },
+   { 'split_reference_name' : 'both'   , 'split_reference_value' :  0.0 },
+   { 'split_reference_name' : 'male'   , 'split_reference_value' : +0.5 },
+]
+'''{xrst_code}
 
 Input Files
 ***********
@@ -83,7 +95,7 @@ The rows of this table are documented below by the name column.
 If an option name does not appear, the corresponding
 default value is used for the option.
 The final value for each of the options is reported in the file
-:ref:`csv_fit@Output Files@option_fit_out.csv` .
+:ref:`csv.fit@Output Files@option_fit_out.csv` .
 Because each option has a default value,
 new option are added in such a way that
 previous option_fit.csv files are still valid.
@@ -108,7 +120,7 @@ Each float value is age at which to split the integration of both the
 ODE and the average of an integrand over an interval.
 The default for this value is the empty string; i.e.,
 no extra age splitting over the uniformly spaced grid specified by
-:ref:`csv_fit@Input Files@option_fit.csv@ode_step_size`.
+:ref:`csv.fit@Input Files@option_fit.csv@ode_step_size`.
 
 bound_random
 ------------
@@ -120,13 +132,21 @@ It is the intention that this bound not be active
 at the final value for the fixed effects.
 The default value for this option is infinity; i.e., no bound.
 
+child_prior_std_factor
+----------------------
+This factor multiplies the parent fit posterior standard deviation for the
+value priors in the during a child fit.
+If it is greater (less) than one, the child priors are larger (smaller)
+than indicated by the posterior corresponding to the parent fit.
+The default value for this option is 2.0.
+
 compress_interval
 -----------------
 This string contains two float values separated by one or more spaces.
 The first (second) float value is called *age_size* ( *time_size* ).
 The default value for this option is both *age_size* and *time_size* are 100.
 
-#. If for a :ref:`csv_fit@Input Files@data_in.csv` row,
+#. If for a :ref:`csv.fit@Input Files@data_in.csv` row,
    *age_upper* - *age_lower*  <= *age_size* ,
    the age average for that data is approximated by its value at age
    ( *age_upper* - *age_lower* ) / 2.
@@ -223,42 +243,12 @@ for the fitted variables to generate (for each fit).
    created priors for the children of the node being fit.
 #. When splitting, the samples are used to create priors for the
    same node at the new split covariate values.
-#. These samples are also used by :ref:`csv_predict-name`
+#. These samples are also used by :ref:`csv.predict-name`
    to create posterior predictions for any function of the fitted variables.
 
 The default value for this option is 20.
 (You can get 1000 MCMC samples by just repeating each of the 20
 independent samples 50 times.)
-
-ode_step_size
--------------
-This float must be positive (greater than zero).
-It specifies the step size in age and time to use when solving the ODE.
-It is also used as the step size for approximating average integrands
-over age-time intervals.
-The smaller *ode_step_size*, the more computation is required to
-approximation the ODE solution and the average integrands.
-Finer resolution for specific ages can be achieved using the
-:ref:`csv_fit@Input Files@option_fit.csv@age_avg_split` option.
-The default value for this option is 10.0.
-
-quasi_fixed
------------
-If this boolean option is true,
-a quasi-Newton method is used to optimize the fixed effects.
-Otherwise a Newton method is used
-The Newton method uses second derivatives of the objective
-and hence requires more work per iteration but it can often attain
-much more accuracy in the final solution.
-The default value *quasi_fixed* is true.
-
-random_seed
------------
-This integer is used to seed the random number generator.
-The default value for this option is
-{xrst_code py}
-   random_seed = int( time.time() )
-{xrst_code}
 
 ode_method
 ----------
@@ -310,11 +300,41 @@ In this case an eigen vector method is used to approximate the ODE solution.
 
 iota_pos_rho_pos
 ................
-If *ode_method* is `iota_zero_rho_pos`` ,
+If *ode_method* is ``iota_pos_rho_pos`` ,
 the smoothing for
 *iota* and *rho*
 must always have lower limit greater than zero.
 In this case an eigen vector method is used to approximate the ODE solution.
+
+ode_step_size
+-------------
+This float must be positive (greater than zero).
+It specifies the step size in age and time to use when solving the ODE.
+It is also used as the step size for approximating average integrands
+over age-time intervals.
+The smaller *ode_step_size*, the more computation is required to
+approximation the ODE solution and the average integrands.
+Finer resolution for specific ages can be achieved using the
+:ref:`csv.fit@Input Files@option_fit.csv@age_avg_split` option.
+The default value for this option is 10.0.
+
+quasi_fixed
+-----------
+If this boolean option is true,
+a quasi-Newton method is used to optimize the fixed effects.
+Otherwise a Newton method is used
+The Newton method uses second derivatives of the objective
+and hence requires more work per iteration but it can often attain
+much more accuracy in the final solution.
+The default value *quasi_fixed* is true.
+
+random_seed
+-----------
+This integer is used to seed the random number generator.
+The default value for this option is
+{xrst_code py}
+   random_seed = int( time.time() )
+{xrst_code}
 
 refit_split
 -----------
@@ -341,6 +361,12 @@ This string is the name of the root node.
 The default for *root_node_name* is the top root of the entire node tree.
 Only the root node and its descendents will be fit.
 
+sample_method
+-------------
+This string specifies the :ref:`option_all_table@sample_method` .
+It must be ``asymptotic`` or ``simulate`` and it's default value is
+``asymptotic`` .
+
 shared_memory_prefix
 --------------------
 This string is used added to the front of the name of the shared
@@ -353,14 +379,6 @@ replaced by underbars.
 If the USER environment variable is not defined,
 the value ``none`` is used for this default.
 
-child_prior_std_factor
-----------------------
-This factor multiplies the parent fit posterior standard deviation for the
-value priors in the during a child fit.
-If it is greater (less) than one, the child priors are larger (smaller)
-than indicated by the posterior corresponding to the parent fit.
-The default value for this option is 2.0.
-
 tolerance_fixed
 ---------------
 is the tolerance for convergence of the fixed effects optimization problem.
@@ -369,12 +387,12 @@ This is relative to one and its default value is 1e-4.
 node.csv
 ========
 This file has the same description as the simulate
-:ref:`csv_simulate@Input Files@node.csv` file.
+:ref:`csv.simulate@Input Files@node.csv` file.
 
 covariate.csv
 =============
 This csv file has the same description as the simulate
-:ref:`csv_simulate@Input Files@covariate.csv` file.
+:ref:`csv.simulate@Input Files@covariate.csv` file.
 
 
 fit_goal.csv
@@ -390,7 +408,7 @@ Each such node must be an descendant of the root node.
 predict_integrand.csv
 =====================
 This is the list of integrands at which predictions are made
-and stored in :ref:`csv_predict@Output Files@fit_predict.csv` .
+and stored in :ref:`csv.predict@Output Files@fit_predict.csv` .
 
 integrand_name
 --------------
@@ -485,6 +503,8 @@ value_prior
 -----------
 is a string containing the name of the value prior for this grid point.
 Either *value_prior* or *const_value* must be non-empty but not both.
+The standard deviation for a value prior is always in the same units as
+the mean for the prior, even when the prior is log-scaled.
 
 dage_prior
 ----------
@@ -492,6 +512,12 @@ is a string containing the name of the dage prior for this grid point.
 If dage_prior is empty, there is no prior for the forward age difference
 of this rate at this grid point.
 This prior cannot be censored.
+If a dage prior is log-scaled,
+the standard deviation is for the difference w.r.t age
+of the offset log transform of the corresponding model variable.
+Otherwise,
+the standard deviation is for the difference w.r.t age
+of the corresponding model variable.
 
 dtime_prior
 -----------
@@ -499,6 +525,13 @@ is a string containing the name of the dtime prior for this grid point.
 If dtime_prior is empty, there is no prior for the forward time difference
 of this rate at this grid point.
 This prior cannot be censored.
+If a dtime prior is log-scaled,
+the standard deviation is for the difference w.r.t time
+of the offset log transform of the corresponding model variable.
+Otherwise,
+the standard deviation is for the difference w.r.t time
+of the corresponding model variable.
+
 
 const_value
 -----------
@@ -513,8 +546,8 @@ child_rate.csv
 This csv file specifies the prior for the child rates
 pini, iota, rho and chi; i.e., their random effects.
 (The parent and child priors for omega are created automatically
-using the :ref:`csv_simulate@Input Files@covariate.csv@omega` column
-in the :ref:`csv_fit@Input Files@covariate.csv` file. )
+using the :ref:`csv.simulate@Input Files@covariate.csv@omega` column
+in the :ref:`csv.fit@Input Files@covariate.csv` file. )
 
 rate_name
 ---------
@@ -528,7 +561,7 @@ value_prior
 is a string containing the name of the value prior for this child rate.
 Note that the child rates are in log of rate space.
 In addition, they are constant in age and time
-(this is a limitation of the csv_fit).
+(this is a limitation of the csv.fit).
 
 {xrst_comment ---------------------------------------------------------------}
 
@@ -542,11 +575,11 @@ this string is the name of the covariate for this multiplier.
 The covariate
 ``one`` is an absolute covariate that is always equal to one and
 ``sex`` is the splitting covariate
-( ``sex`` is sex name in :ref:`csv_module@sex_name2value` ).
+( ``sex`` is sex name in :ref:`csv.module@sex_name2value` ).
 All the other covariates are specified by
-:ref:`csv_fit@Input Files@covariate.csv`.
+:ref:`csv.fit@Input Files@covariate.csv`.
 If one of these covariates appears in the
-:ref:`csv_fit@Input Files@option_fit.csv@absolute_covariates` list it is an
+:ref:`csv.fit@Input Files@option_fit.csv@absolute_covariates` list it is an
 absolute covariate.
 The other covariates in covariate.csv are
 :ref:`relative covariates<glossary@Relative Covariate>` .
@@ -588,7 +621,7 @@ value_prior
 is a string containing the name of the value prior
 for this covariate multiplier.
 Note that the covariate multipliers are constant in age and time
-(this is a limitation of the csv_fit).
+(this is a limitation of the csv.fit).
 Either *value_prior* or *const_value* must be non-empty but not both.
 
 const_value
@@ -612,7 +645,7 @@ meas_std, eta, nu, sample_size.
 
 data_id
 -------
-is an :ref:`csv_module@Notation@Index Column` for data.csv.
+is an :ref:`csv.module@Notation@Index Column` for data.csv.
 This is necessary so that the dismod_at data table data_id values correspond
 to the data_in.csv data_id values.
 
@@ -665,6 +698,8 @@ meas_std
 --------
 This float is the standard deviation of the measurement noise
 for this data point.
+This standard deviation is always in the same units as
+the data, even when the density is log-scaled.
 
 binomial
 ........
@@ -689,7 +724,7 @@ sample_size
 -----------
 This float should be empty if the density is not binomial.
 Otherwise, it the sample size for a binomial distribution
-(see :ref:`csv_binomial-name` for an example):
+(see :ref:`csv.binomial-name` for an example):
 
 .. csv-table::
    :widths: auto
@@ -733,7 +768,7 @@ This is the at_cascade sqlite all node database for the cascade.
 
 dismod.db
 =========
-1. There is a subdirectory of the :ref:csv_fit@`fit_dir` with the
+1. There is a subdirectory of the :ref:csv.fit@`fit_dir` with the
    name of the root node. The ``dismod.db`` file in this directory is
    the `dismod_at_database`_ corresponding to the fit and predictions for
    the root node fit for both sexes.
@@ -741,7 +776,7 @@ dismod.db
    These directories contain ``dismod.db`` database for
    the root node fit of the corresponding sex.
 3. For each node between the root node and the
-   :ref:`fit_goal nodes <csv_fit@Input Files@fit_goal.csv>` ,
+   :ref:`fit_goal nodes <csv.fit@Input Files@fit_goal.csv>` ,
    and for the ``female`` and ``male`` sex, there is a directory.
    This is directly below the directory for its parent node and same sex.
    It contains the ``dismod.db`` data base for the corresponding fit.
@@ -750,7 +785,7 @@ dismod.db
 
 option_fit_out.csv
 ==================
-This is a copy of :ref:`csv_fit@Input Files@option_fit.csv` with the default
+This is a copy of :ref:`csv.fit@Input Files@option_fit.csv` with the default
 filled in for missing values.
 
 fit_predict.csv
@@ -815,15 +850,8 @@ A different (independent) sample from of the model variables
 from their posterior distribution is used to do the predictions for
 each sample index.
 
-{xrst_end csv_fit}
+{xrst_end csv.fit}
 '''
-#-----------------------------------------------------------------------------
-# split_reference_table
-split_reference_table = [
-   { 'split_reference_name' : 'female' , 'split_reference_value' : -0.5 },
-   { 'split_reference_name' : 'both'   , 'split_reference_value' :  0.0 },
-   { 'split_reference_name' : 'male'   , 'split_reference_value' : +0.5 },
-]
 # ----------------------------------------------------------------------------
 # Sets global global_option_value to dict representation of option_fit.csv
 #
@@ -868,6 +896,7 @@ def set_global_option_value(fit_dir, option_table, top_node_name) :
       'absolute_covariates'   : (str,   None)               ,
       'age_avg_split'         : (str,   None)               ,
       'bound_random'          : (float, float('inf'))       ,
+      'child_prior_std_factor': (float,  2.0)               ,
       'compress_interval'     : (str,   '100.0 100.0')      ,
       'hold_out_integrand'    : (str,   None)               ,
       'max_abs_effect'        : (float, 2.0)                ,
@@ -882,9 +911,9 @@ def set_global_option_value(fit_dir, option_table, top_node_name) :
       'random_seed'           : (int ,  random_seed )       ,
       'refit_split'           : (bool,  'true' )            ,
       'root_node_name'        : (str,   top_node_name)      ,
-      'tolerance_fixed'       : (float, 1e-4)               ,
+      'sample_method'         : (str,   'asymptotic')       ,
       'shared_memory_prefix'  : (str,   user)               ,
-      'child_prior_std_factor': (float,  2.0)               ,
+      'tolerance_fixed'       : (float, 1e-4)               ,
    }
    # END_SORT_THIS_LINE_MINUS_2
    #
@@ -895,11 +924,11 @@ def set_global_option_value(fit_dir, option_table, top_node_name) :
       line_number += 1
       name         = row['name']
       if name in global_option_value :
-         msg  = f'csv_fit: Error: line {line_number} in option_fit.csv\n'
+         msg  = f'csv.fit: Error: line {line_number} in option_fit.csv\n'
          msg += f'the name {name} appears twice in this table'
          assert False, msg
       if not name in option_default :
-         msg  = f'csv_fit: Error: line {line_number} in option_fit.csv\n'
+         msg  = f'csv.fit: Error: line {line_number} in option_fit.csv\n'
          msg += f'{name} is not a valid option name'
          assert False, msg
       (option_type, defualt) = option_default[name]
@@ -908,7 +937,7 @@ def set_global_option_value(fit_dir, option_table, top_node_name) :
          option_value[name] = None
       elif option_type == bool :
          if value not in [ 'true', 'false' ] :
-            msg  = f'csv_fit: Error: line {line_number} in option_fit.csv\n'
+            msg  = f'csv.fit: Error: line {line_number} in option_fit.csv\n'
             msg += f'The value for {name} is not true or false'
             assert False, msg
          global_option_value[name] = value == 'true'
@@ -1531,7 +1560,7 @@ def create_all_node_database(fit_dir, age_grid, time_grid, covariate_table) :
    # root_node_name
    root_node_name = at_cascade.get_parent_node(database)
    #
-   # all_option
+   # option_all
    root_node_database     = f'{fit_dir}/root_node.db'
    child_prior_std_factor = global_option_value['child_prior_std_factor']
    shared_memory_prefix   = global_option_value['shared_memory_prefix']
@@ -1545,7 +1574,7 @@ def create_all_node_database(fit_dir, age_grid, time_grid, covariate_table) :
       refit_split = 'true'
    else :
       refit_split = 'false'
-   all_option = {
+   option_all = {
       'absolute_covariates'          : absolute_covariates ,
       'balance_fit'                  : 'sex -0.5 +0.5' ,
       'max_abs_effect'               : global_option_value['max_abs_effect'],
@@ -1554,13 +1583,14 @@ def create_all_node_database(fit_dir, age_grid, time_grid, covariate_table) :
       'number_sample'                : number_sample,
       'perturb_optimization_scale'   : 0.2,
       'perturb_optimization_start'   : 0.2,
+      'sample_method'                : global_option_value['sample_method'],
       'shared_memory_prefix'         : shared_memory_prefix,
       'refit_split'                  : refit_split,
       'result_dir'                   : fit_dir,
       'root_node_database'           : root_node_database,
       'root_node_name'               : root_node_name,
-      'split_covariate_name'         : 'sex',
       'root_split_reference_name'    : 'both',
+      'split_covariate_name'         : 'sex',
       'shift_prior_std_factor'       : child_prior_std_factor,
    }
    #
@@ -1650,7 +1680,7 @@ def create_all_node_database(fit_dir, age_grid, time_grid, covariate_table) :
    # create_all_node_db
    at_cascade.create_all_node_db(
       all_node_database         = f'{fit_dir}/all_node.db'  ,
-      all_option                = all_option                ,
+      option_all                = option_all                ,
       split_reference_table     = split_reference_table     ,
       node_split_table          = node_split_table          ,
       mulcov_freeze_table       = mulcov_freeze_table       ,
