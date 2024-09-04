@@ -1001,6 +1001,7 @@ def set_global_option_value(fit_dir, option_table, top_node_name) :
       'sample_method'         : (str,   'asymptotic')       ,
       'shared_memory_prefix'  : (str,   user)               ,
       'tolerance_fixed'       : (float, 1e-4)               ,
+      'zero_sum_child_rate'   : (str,   '')                 ,
    }
    # END_SORT_THIS_LINE_MINUS_2
    #
